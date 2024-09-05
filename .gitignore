@@ -7,4 +7,6 @@
 /src/.umi-test
 /dist
 .swc
-.env
+/.env
+/.idea
+/src/pages/test1
