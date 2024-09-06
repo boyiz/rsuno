@@ -1,36 +1,43 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Table, Avatar, Space, Input, Button } from '@douyinfe/semi-ui';
+import { Table, Toast, Space, Input, Button } from '@douyinfe/semi-ui';
 // import { IconMore } from '@douyinfe/semi-icons';
-import ZTable from '@/components/RsTable';
+import RsTable from '@/components/RsTable';
 import RsSideSheet from '@/components/RsSideSheet'
 const { Column } = Table;
 
 export default function App() {
     const [filteredValue, setFilteredValue] = useState<any[]>();
-    const [visible, setVisible] = useState(false);
+    const [sideSheetVisible, setSideSheetVisible] = useState(false);
     const compositionRef = useRef({ isComposition: false });
+    const [selectTableData, setSelectTableData] = useState<any[]>();//设置作为回调函数，接收table中选择的数据
 
 
-    const toggleVisibility = () => {
-        setVisible(!visible);
-    };
-    const handleChange = (value: any) => {
-        if (compositionRef.current.isComposition) {
-            return;
-        }
-        const newFilteredValue = value ? [value] : [];
-        setFilteredValue(newFilteredValue);
-    };
-    const handleCompositionStart = () => {
-        compositionRef.current.isComposition = true;
+    //SideSheet显示切换
+    const toggleSideSheetVisibility = () => {
+        if (selectTableData && selectTableData?.length > 5) {
+            Toast.warning({ content: '对比数据超过5条，请减少后重试' })
+        } else setSideSheetVisible(!sideSheetVisible);
     };
 
-    const handleCompositionEnd = (event: any) => {
-        compositionRef.current.isComposition = false;
-        const value = event.target.value;
-        const newFilteredValue = value ? [value] : [];
-        setFilteredValue(newFilteredValue);
-    };
+    //筛选相关配置
+    //TODO：还没想好，目前来看不适用，后续可以使用单独的搜索框
+    // const handleFilterChange = (value: any) => {
+    //     if (compositionRef.current.isComposition) {
+    //         return;
+    //     }
+    //     const newFilteredValue = value ? [value] : [];
+    //     setFilteredValue(newFilteredValue);
+    // };
+    // const handleFilterCompositionStart = () => {
+    //     compositionRef.current.isComposition = true;
+    // };
+    // const handleFilterCompositionEnd = (event: any) => {
+    //     compositionRef.current.isComposition = false;
+    //     const value = event.target.value;
+    //     const newFilteredValue = value ? [value] : [];
+    //     setFilteredValue(newFilteredValue);
+    // };
+
 
     const data = [
         {
@@ -100,14 +107,14 @@ export default function App() {
             title: (
                 <Space>
                     <span>项目</span>
-                    <Input
+                    {/* <Input
                         placeholder="请输入筛选值"
                         style={{ width: 200 }}
-                        onCompositionStart={handleCompositionStart}
-                        onCompositionEnd={handleCompositionEnd}
-                        onChange={handleChange}
+                        onCompositionStart={handleFilterCompositionStart}
+                        onCompositionEnd={handleFilterCompositionEnd}
+                        onChange={handleFilterChange}
                         showClear
-                    />
+                    /> */}
                 </Space>
             ),
             dataIndex: 'xm_name',
@@ -119,8 +126,8 @@ export default function App() {
                     </div>
                 );
             },
-            onFilter: (value: string, record: any) => record.xm_name.includes(value),
-            filteredValue,
+            //onFilter: (value: string, record: any) => record.xm_name.includes(value),
+            //filteredValue,
         },
         {
             title: '收入预算数',
@@ -128,19 +135,7 @@ export default function App() {
             render: (text: any) => `${text} 万元`,
         },
         {
-            title: (
-                <Space>
-                    <span>项目</span>
-                    <Input
-                        placeholder="请输入筛选值"
-                        style={{ width: 200 }}
-                        onCompositionStart={handleCompositionStart}
-                        onCompositionEnd={handleCompositionEnd}
-                        onChange={handleChange}
-                        showClear
-                    />
-                </Space>
-            ),
+            title: '项目',
             dataIndex: 'xm_name1',
             render: (text: string, record: any, index: number) => {
                 return (
@@ -149,8 +144,8 @@ export default function App() {
                     </div>
                 );
             },
-            onFilter: (value: string, record: any) => record.xm_name1.includes(value),
-            filteredValue,
+            //onFilter: (value: string, record: any) => record.xm_name1.includes(value),
+            //filteredValue,
         },
         {
             title: '支出预算数',
@@ -159,17 +154,20 @@ export default function App() {
         },
     ], []);
 
-
     return (
         <>
-            <Button onClick={toggleVisibility}>数据对比</Button>
-            <RsSideSheet
-                title={'数据对比'}
-                isVisible={visible}
-                isCancel={toggleVisibility}
-                size={'large'}
-            />
-            <ZTable
+            {selectTableData && selectTableData?.length > 0 ?
+                <>
+                    <Button onClick={toggleSideSheetVisibility}>数据对比</Button>
+                    <RsSideSheet
+                        title={'数据对比'}
+                        isVisible={sideSheetVisible}
+                        isCancel={toggleSideSheetVisibility}
+                        size={'large'}
+                        selectTableData={sideSheetVisible ? selectTableData : null}
+                    />
+                </> : null}
+            <RsTable
                 tableDataProps={{
                     tableData: data
                 }}
@@ -183,8 +181,8 @@ export default function App() {
                     zebraRow: false,
                     size: 'small'
                 }}
+                onSelectTableData={setSelectTableData}
             />
-            {/*<Table columns={columns} dataSource={data} style={{ width: '80%', float: 'left' }} />*/}
         </>
     );
 }

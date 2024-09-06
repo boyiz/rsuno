@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@douyinfe/semi-ui": "^2.65.0",
+    "@visactor/vchart-semi-theme": "^1.12.1",
     "umi": "^4.3.18"
   },
   "devDependencies": {
